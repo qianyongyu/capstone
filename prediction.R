@@ -103,15 +103,16 @@ pKNm <- function(candidates, history, profile = FALSE) {
 # returns whether the word is successfully predicted by m
 # when *required* number of words are allowed on each guess
 # and up to *prefix* number of letters of the word are known
-predicted <- function(word, m, required, prefix, detail) {
+# the result is filled into the *ctx* object
+checkPrediction <- function(word, m, required, prefix, ctx) {
   predictions <- m[order(-p)][1:required,]$w1
   result <- 'Miss'
   if(word %in% predictions) {
     result <- 'Hit'
   }
-  if(detail) {
-    cat(paste(word, '------>', paste0(predictions, collapse = ', '), "------>", result, '\n'))
-  }
+  ctx$detail <- rbind(ctx$detail, data.frame(Word = word, 
+                                       Predictions = paste0(predictions, collapse = ', '), 
+                                       Result = result))
   if(result != 'Hit' && prefix > 0) {
     # for the first (up to) prefix letters
     for(i in 1:min(prefix, nchar(word))) {
@@ -121,35 +122,36 @@ predicted <- function(word, m, required, prefix, detail) {
       if(word %in% predictions) {
         result <- 'Hit'
       }
-      if(detail) {
-        cat(paste(paste0('(', substr(word, 1, i), ')', substr(word, i + 1, nchar(word))), '------>', paste0(predictions, collapse = ', '), "------>", result, '\n'))
-      }
+      ctx$detail <- rbind(ctx$detail, data.frame(Word = paste0('(', substr(word, 1, i), ')', substr(word, i + 1, nchar(word))), 
+                                           Predictions = paste0(predictions, collapse = ', '), 
+                                           Result = result))
       if(result == 'Hit') {
         # not need to go on
         break
       }
     }
   }
-  return(result == 'Hit')
+  if(result == 'Hit') {
+    ctx$hits <- ctx$hits + 1
+  } else{
+    ctx$misses <- ctx$misses + 1
+  }
+  return(ctx)
 }
 
 # given a sentence, try to predict each word in sequence based on the previous words
-predictSentence <- function(sentence, required = 3, prefix = 2, detail = FALSE) {
+predictSentence <- function(sentence, required = 3, prefix = 2, maxN = 4) {
   # start with base single word frequency
   m <- init
   cleaned = gsub("[^a-z']+", ' ', tolower(sentence))
   words <- strsplit(cleaned, ' ')[[1]]
-  hits <- 0
-  misses <- 0
   history <- c()
-  maxN <- length(dict) - 1
+  ctx <- list(detail = data.frame(),
+                 hits = 0,
+                 misses = 0)
   for(word in words) {
     # check if the prediction is correct
-    if(predicted(word, m, required, prefix, detail)) {
-      hits <- hits + 1
-    } else {
-      misses <- misses + 1
-    }
+    ctx <- checkPrediction(word, m, required, prefix, ctx)
     
     # truncate history 
     history <- append(history, word)
@@ -162,6 +164,5 @@ predictSentence <- function(sentence, required = 3, prefix = 2, detail = FALSE) 
     m <- pKNm(common, history)
   }
   
-  # prints some results
-  cat(paste("\nHits:", hits, "Misses:", misses, "Precision:", round(hits / (hits + misses), 3)))
+  return(ctx)
 }
