@@ -30,11 +30,14 @@ shinyUI(fluidPage(
     
     mainPanel(width = 7,
               h2("Input"),
+              p("For best performance please paste whole sentences in the text area below."),
               tags$textarea("", rows = 4, cols = 80, id = "sentence"),
               h2("Summary"),
               textOutput("accuracy"),
               h2("Details"),
-              tableOutput("result")
+              wellPanel(style = "overflow-y:scroll; max-height: 400px",
+                        tableOutput("result")
+                        )
     )
   )
 ))

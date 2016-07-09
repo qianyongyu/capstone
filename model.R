@@ -24,15 +24,15 @@ mergeNGrams(src, 1:50, 1:5, "train", list("1" = 0, "2" = 0, "3" = 1, "4" = 1, "5
 mergeAll(src, 1:5, 'train')
 
 # merge the another 20 splits of n-gram frequencies using a 0-0-1-1-1 cutoff
-mergeNGrams(src, 51:70, 5, "holdout", list("1" = 0, "2" = 0, "3" = 1, "4" = 1, "5" = 1))
+mergeNGrams(src, 51:70, 1:5, "holdout", list("1" = 0, "2" = 0, "3" = 1, "4" = 1, "5" = 1))
 
 # and this will be the holdout set
-mergeAll(src, 5, 'holdout')
+mergeAll(src, 1:5, 'holdout')
 
 # the 3 D values are calculated on the holdout set
 ds <- calculateDs('holdout')
-save(ds, 'ds')
+save(ds, file = 'ds')
 
 # and the model is built on the training set
 dict <- buildDict(5, 'train', ds)
-save(dict, 'dict')
+save(dict, file = 'dict')
