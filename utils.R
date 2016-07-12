@@ -72,6 +72,15 @@ splitAndSummarize <- function(buf, ctx) {
   return(ctx)
 }
 
+betterTokenizer <- function(x, n) {
+  sentences <- tokenize_sentences(x)
+  ngrams <- lapply(sentences, function(x) {
+    x <- paste('xxqq', x)
+    tokenize_ngrams(x, n = n, n_min = n, simplify = TRUE)
+    })
+  return(unlist(ngrams, use.names = FALSE))
+}
+
 # for each s in src, for each part in <s>/split/<part>, for each n in ns
 # writes n-grams as Term/Freq tsv to <s>/<n>/<part>
 writeNGrams <- function(src, parts, ns) {
@@ -82,8 +91,7 @@ writeNGrams <- function(src, parts, ns) {
       for(n in ns) {
         tdm <- TermDocumentMatrix(c, 
             control = list(wordLengths = c(1, Inf), 
-                tokenize = function(x) NGramTokenizer(x, 
-                            Weka_control(min = n, max = n, delimiters = ' \r\n\t.,;:"()?!'))))
+                tokenize = function(x) betterTokenizer(as.character(x), n)))
         dir.create(file.path(s, n), FALSE)
         wf <- gzfile(file.path(s, n, paste0(part, ".gz")))
         tf <- as.matrix(tdm)

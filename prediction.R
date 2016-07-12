@@ -12,10 +12,6 @@ for(n in 2:5) {
 }
 # pick the most popular words as candidates for prediction
 common <- dict[[1]][Freq > 100]$w1
-# some initial guess for first word in sentence
-init <- copy(dict[[1]][common])
-init[,c("p", "d", "total") := NULL]
-setnames(init, "Freq", "p")
 
 # this looks up the ngram data using the dictionary
 lookupNGram <- function(words) {
@@ -141,15 +137,16 @@ checkPrediction <- function(word, m, required, prefix, ctx) {
 
 # given a sentence, try to predict each word in sequence based on the previous words
 predictSentence <- function(sentence, required = 3, prefix = 2, maxN = 4) {
-  # start with base single word frequency
-  m <- init
   cleaned = gsub("[^a-z']+", ' ', tolower(sentence))
   words <- strsplit(cleaned, ' ')[[1]]
-  history <- c()
+  history <- c('xxqq')
   ctx <- list(detail = data.frame(),
                  hits = 0,
                  misses = 0)
   for(word in words) {
+    # predict the next word
+    m <- pKNm(common, history)
+    
     # check if the prediction is correct
     ctx <- checkPrediction(word, m, required, prefix, ctx)
     
@@ -159,10 +156,6 @@ predictSentence <- function(sentence, required = 3, prefix = 2, maxN = 4) {
     if(len > maxN) {
       history <- history[(len - maxN + 1):len]
     }
-    
-    # predict the next word
-    m <- pKNm(common, history)
   }
-  
   return(ctx)
 }

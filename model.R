@@ -2,17 +2,15 @@
 # actual functions used are in utils.R in order to keep this file concise
 
 library(tm)
-library(RWeka)
+library(tokenizers)
 library(data.table)
-# avoids Weka library multi-core issue
-options(mc.cores=1)
 source("utils.R")
 
 # assuming we're in the directory of the three en_US text files
 src <- c('blogs', 'news', 'twitter')
 
-# summarize and split the corpus into 100 parts
-prepareCorpus(src);
+# # summarize and split the corpus into 100 parts
+# prepareCorpus(src);
 
 # parse each split into 1-5 grams
 writeNGrams(src, 1:100, 1:5)
