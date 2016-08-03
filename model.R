@@ -10,7 +10,7 @@ source("utils.R")
 src <- c('blogs', 'news', 'twitter')
 
 # # summarize and split the corpus into 100 parts
-# prepareCorpus(src);
+prepareCorpus(src);
 
 # parse each split into 1-5 grams
 writeNGrams(src, 1:100, 1:5)
